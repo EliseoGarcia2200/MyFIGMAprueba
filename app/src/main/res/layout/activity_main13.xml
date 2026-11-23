@@ -63,6 +63,26 @@
                 android:textColor="@color/texto_oscuro"
                 android:textSize="16sp" />
 
+            <!-- Nombre del producto -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Nombre"
+                android:textColor="@color/texto_oscuro"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etNombreProducto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:hint="Ej. Pan de dulce"
+                android:inputType="textCapSentences"
+                android:paddingVertical="8dp"
+                android:textSize="14sp" />
+
             <!-- Precio y Detalles -->
             <TextView
                 android:layout_width="wrap_content"

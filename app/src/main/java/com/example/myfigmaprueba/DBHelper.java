@@ -12,18 +12,20 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
 /**
- * Base de datos SQLite de la app. Por ahora solo tiene la tabla de usuarios;
- * en los siguientes pasos se agregan publicaciones, pedidos y compras aquí mismo.
+ * Base de datos SQLite de la app. Tablas: usuarios y publicaciones;
+ * en los siguientes pasos se agregan pedidos y compras aquí mismo.
  */
 public class DBHelper extends SQLiteOpenHelper {
 
     private static final String DB_NOMBRE = "cero_desperdicio.db";
-    private static final int DB_VERSION = 1;
+    private static final int DB_VERSION = 2;
     private static final int ITERACIONES = 10000;
 
     public DBHelper(Context context) {
@@ -40,14 +42,29 @@ public class DBHelper extends SQLiteOpenHelper {
                 + "salt TEXT NOT NULL, "
                 + "rol TEXT NOT NULL, "
                 + "creado INTEGER NOT NULL)");
+        crearTablaPublicaciones(db);
+    }
+
+    private void crearTablaPublicaciones(SQLiteDatabase db) {
+        db.execSQL("CREATE TABLE publicaciones ("
+                + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "panaderia_id INTEGER NOT NULL, "
+                + "nombre TEXT NOT NULL, "
+                + "precio REAL NOT NULL, "
+                + "detalles TEXT NOT NULL DEFAULT '', "
+                + "cantidad INTEGER NOT NULL, "
+                + "caja_sorpresa INTEGER NOT NULL DEFAULT 0, "
+                + "creado INTEGER NOT NULL)");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int versionVieja, int versionNueva) {
-        // Solo para desarrollo: al subir DB_VERSION se borra todo y se recrea.
-        // TODO antes de entregar: cambiar por migraciones que conserven los datos.
-        db.execSQL("DROP TABLE IF EXISTS usuarios");
-        onCreate(db);
+        // Cada versión nueva agrega lo que le falta SIN borrar los datos existentes.
+        if (versionVieja < 2) {
+            crearTablaPublicaciones(db);
+        }
+        // Cuando exista la versión 3 (por ejemplo, imágenes), se agrega aquí abajo:
+        // if (versionVieja < 3) { db.execSQL("ALTER TABLE ..."); }
     }
 
     // ---------------------------------------------------------------- usuarios
@@ -93,6 +110,83 @@ public class DBHelper extends SQLiteOpenHelper {
 
             return new Usuario(c.getLong(0), c.getString(1), c.getString(2), c.getString(5));
         }
+    }
+
+    // ---------------------------------------------------------- publicaciones
+
+    /** Guarda una publicación nueva. Devuelve su id, o -1 si no se pudo guardar. */
+    public long insertarPublicacion(Publicacion p) {
+        ContentValues valores = valoresDe(p);
+        valores.put("creado", System.currentTimeMillis());
+        return getWritableDatabase().insert("publicaciones", null, valores);
+    }
+
+    /** Actualiza una publicación (solo si pertenece a esa panadería). */
+    public boolean actualizarPublicacion(Publicacion p) {
+        int filas = getWritableDatabase().update("publicaciones", valoresDe(p),
+                "id = ? AND panaderia_id = ?",
+                new String[]{String.valueOf(p.id), String.valueOf(p.panaderiaId)});
+        return filas > 0;
+    }
+
+    /** Elimina una publicación (solo si pertenece a esa panadería). */
+    public boolean eliminarPublicacion(long id, long panaderiaId) {
+        int filas = getWritableDatabase().delete("publicaciones",
+                "id = ? AND panaderia_id = ?",
+                new String[]{String.valueOf(id), String.valueOf(panaderiaId)});
+        return filas > 0;
+    }
+
+    public Publicacion obtenerPublicacion(long id, long panaderiaId) {
+        SQLiteDatabase db = getReadableDatabase();
+        try (Cursor c = db.query("publicaciones", COLUMNAS_PUBLICACION,
+                "id = ? AND panaderia_id = ?",
+                new String[]{String.valueOf(id), String.valueOf(panaderiaId)},
+                null, null, null)) {
+            return c.moveToFirst() ? publicacionDe(c) : null;
+        }
+    }
+
+    /** Publicaciones de una panadería, las más nuevas primero. filtro puede ir vacío. */
+    public List<Publicacion> listarPublicaciones(long panaderiaId, String filtro) {
+        String where = "panaderia_id = ?";
+        String[] args;
+        if (filtro == null || filtro.isEmpty()) {
+            args = new String[]{String.valueOf(panaderiaId)};
+        } else {
+            where += " AND nombre LIKE ?";
+            args = new String[]{String.valueOf(panaderiaId), "%" + filtro + "%"};
+        }
+
+        List<Publicacion> lista = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+        try (Cursor c = db.query("publicaciones", COLUMNAS_PUBLICACION, where, args,
+                null, null, "creado DESC")) {
+            while (c.moveToNext()) {
+                lista.add(publicacionDe(c));
+            }
+        }
+        return lista;
+    }
+
+    private static final String[] COLUMNAS_PUBLICACION = {
+            "id", "panaderia_id", "nombre", "precio", "detalles", "cantidad", "caja_sorpresa"
+    };
+
+    private static Publicacion publicacionDe(Cursor c) {
+        return new Publicacion(c.getLong(0), c.getLong(1), c.getString(2), c.getDouble(3),
+                c.getString(4), c.getInt(5), c.getInt(6) == 1);
+    }
+
+    private static ContentValues valoresDe(Publicacion p) {
+        ContentValues valores = new ContentValues();
+        valores.put("panaderia_id", p.panaderiaId);
+        valores.put("nombre", p.nombre);
+        valores.put("precio", p.precio);
+        valores.put("detalles", p.detalles);
+        valores.put("cantidad", p.cantidad);
+        valores.put("caja_sorpresa", p.cajaSorpresa ? 1 : 0);
+        return valores;
     }
 
     // ------------------------------------------------------------- contraseñas
