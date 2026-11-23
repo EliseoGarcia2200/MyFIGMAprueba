@@ -10,9 +10,11 @@ public class Publicacion {
     public final String detalles;
     public final int cantidad;
     public final boolean cajaSorpresa;
+    /** Ruta del archivo de la foto dentro de la app, o null si no tiene foto. */
+    public final String imagen;
 
     public Publicacion(long id, long panaderiaId, String nombre, double precio,
-                       String detalles, int cantidad, boolean cajaSorpresa) {
+                       String detalles, int cantidad, boolean cajaSorpresa, String imagen) {
         this.id = id;
         this.panaderiaId = panaderiaId;
         this.nombre = nombre;
@@ -20,5 +22,6 @@ public class Publicacion {
         this.detalles = detalles;
         this.cantidad = cantidad;
         this.cajaSorpresa = cajaSorpresa;
+        this.imagen = imagen;
     }
 }

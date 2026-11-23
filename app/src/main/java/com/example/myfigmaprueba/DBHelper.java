@@ -25,7 +25,7 @@ import javax.crypto.spec.PBEKeySpec;
 public class DBHelper extends SQLiteOpenHelper {
 
     private static final String DB_NOMBRE = "cero_desperdicio.db";
-    private static final int DB_VERSION = 2;
+    private static final int DB_VERSION = 3;
     private static final int ITERACIONES = 10000;
 
     public DBHelper(Context context) {
@@ -45,6 +45,18 @@ public class DBHelper extends SQLiteOpenHelper {
         crearTablaPublicaciones(db);
     }
 
+    /** Agrega una columna solo si todavía no existe (así la migración nunca falla por repetirse). */
+    private static void agregarColumnaSiFalta(SQLiteDatabase db, String tabla,
+                                              String columna, String definicion) {
+        try (Cursor c = db.rawQuery("PRAGMA table_info(" + tabla + ")", null)) {
+            int indiceNombre = c.getColumnIndex("name");
+            while (c.moveToNext()) {
+                if (columna.equals(c.getString(indiceNombre))) return;
+            }
+        }
+        db.execSQL("ALTER TABLE " + tabla + " ADD COLUMN " + columna + " " + definicion);
+    }
+
     private void crearTablaPublicaciones(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE publicaciones ("
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -54,6 +66,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 + "detalles TEXT NOT NULL DEFAULT '', "
                 + "cantidad INTEGER NOT NULL, "
                 + "caja_sorpresa INTEGER NOT NULL DEFAULT 0, "
+                + "imagen TEXT, "
                 + "creado INTEGER NOT NULL)");
     }
 
@@ -61,10 +74,13 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int versionVieja, int versionNueva) {
         // Cada versión nueva agrega lo que le falta SIN borrar los datos existentes.
         if (versionVieja < 2) {
-            crearTablaPublicaciones(db);
+            crearTablaPublicaciones(db); // ya trae todas las columnas actuales
         }
-        // Cuando exista la versión 3 (por ejemplo, imágenes), se agrega aquí abajo:
-        // if (versionVieja < 3) { db.execSQL("ALTER TABLE ..."); }
+        if (versionVieja < 3) {
+            // Versión 3: foto de la publicación (ruta del archivo).
+            agregarColumnaSiFalta(db, "publicaciones", "imagen", "TEXT");
+        }
+        // Versión 4 en adelante: agregar aquí abajo con agregarColumnaSiFalta(...).
     }
 
     // ---------------------------------------------------------------- usuarios
@@ -170,12 +186,12 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     private static final String[] COLUMNAS_PUBLICACION = {
-            "id", "panaderia_id", "nombre", "precio", "detalles", "cantidad", "caja_sorpresa"
+            "id", "panaderia_id", "nombre", "precio", "detalles", "cantidad", "caja_sorpresa", "imagen"
     };
 
     private static Publicacion publicacionDe(Cursor c) {
         return new Publicacion(c.getLong(0), c.getLong(1), c.getString(2), c.getDouble(3),
-                c.getString(4), c.getInt(5), c.getInt(6) == 1);
+                c.getString(4), c.getInt(5), c.getInt(6) == 1, c.getString(7));
     }
 
     private static ContentValues valoresDe(Publicacion p) {
@@ -186,6 +202,7 @@ public class DBHelper extends SQLiteOpenHelper {
         valores.put("detalles", p.detalles);
         valores.put("cantidad", p.cantidad);
         valores.put("caja_sorpresa", p.cajaSorpresa ? 1 : 0);
+        valores.put("imagen", p.imagen);
         return valores;
     }
 
