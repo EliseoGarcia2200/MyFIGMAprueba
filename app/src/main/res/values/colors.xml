@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="naranja_primario">#C84B28</color>
+    <color name="lila_nav">#F3E8FF</color>
+    <color name="lila_fondo_texto">#FDF4FF</color>
+    <color name="gris_borde">#DCDCDC</color>
+    <color name="gris_fondo">#ECECEC</color>
+    <color name="gris_placeholder">#E0E0E0</color>
+    <color name="verde_fondo">#D1FAE5</color>
+    <color name="verde_texto">#059669</color>
+    <color name="amarillo_fondo">#FDE68A</color>
+    <color name="amarillo_texto">#B45309</color>
+    <color name="texto_oscuro">#1F1F1F</color>
+    <color name="texto_secundario">#666666</color>
+    <color name="blanco">#FFFFFF</color>
+</resources>
