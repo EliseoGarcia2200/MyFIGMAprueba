@@ -179,7 +179,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:background="@drawable/bg_badge_naranja"
+                            android:background="@drawable/bg_boton_naranja"
                             android:paddingHorizontal="8dp"
                             android:paddingVertical="2dp"
                             android:text="• Por agotarse"

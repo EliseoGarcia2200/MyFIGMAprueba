@@ -1,6 +1,7 @@
 package com.example.myfigmaprueba;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,16 +12,25 @@ import androidx.core.view.WindowInsetsCompat;
 
 /**
  * Clase base de todas las pantallas. Aquí vive lo que se repite:
- * márgenes del sistema (edge-to-edge), botón de regresar y barra inferior.
+ * márgenes del sistema (edge-to-edge), botón de regresar, barra inferior y sesión.
  */
 public abstract class BaseActivity extends AppCompatActivity {
+
+    /** Sesión del usuario actual (disponible desde onCreate en todas las pantallas). */
+    protected SesionManager sesion;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        sesion = new SesionManager(this);
+    }
 
     /** Se usa en lugar de setContentView(). Llámalo desde onCreate de cada pantalla. */
     protected void mostrarPantalla(int layoutId) {
         WindowCompat.enableEdgeToEdge(getWindow());
         setContentView(layoutId);
 
-        View raiz = findViewById(R.id.main);
+        View raiz = findViewById(android.R.id.content);
         if (raiz != null) {
             ViewCompat.setOnApplyWindowInsetsListener(raiz, (v, insets) -> {
                 Insets barras = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -43,7 +53,12 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     /** Si la pantalla incluye layout_bottom_nav, conecta sus 4 botones. */
     private void configurarBarraInferior() {
-        navegarDesdeBarra(R.id.navInicio, InicioPanaderiaActivity.class);
+        View inicio = findViewById(R.id.navInicio);
+        if (inicio != null) {
+            // "Inicio" depende del rol: la panadería ve su panel, el cliente ve el buscador.
+            inicio.setOnClickListener(v -> irASeccion(
+                    sesion.esPanaderia() ? InicioPanaderiaActivity.class : BuscarLocalesActivity.class));
+        }
         navegarDesdeBarra(R.id.navBuscar, BuscarLocalesActivity.class);
         navegarDesdeBarra(R.id.navCompras, MisComprasActivity.class);
         navegarDesdeBarra(R.id.navPerfil, PerfilEmpresaActivity.class);
@@ -51,13 +66,35 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     private void navegarDesdeBarra(int idBoton, Class<?> destino) {
         View boton = findViewById(idBoton);
-        if (boton == null) return;
-        boton.setOnClickListener(v -> {
-            if (getClass() == destino) return; // ya estamos aquí
-            Intent intent = new Intent(this, destino);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(intent);
-        });
+        if (boton != null) {
+            boton.setOnClickListener(v -> irASeccion(destino));
+        }
+    }
+
+    private void irASeccion(Class<?> destino) {
+        if (getClass() == destino) return; // ya estamos aquí
+        Intent intent = new Intent(this, destino);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
+    }
+
+    /** Abre la pantalla principal según el rol y borra el historial (no se puede volver al login). */
+    protected void irAInicioSegunRol() {
+        Class<?> destino = sesion.esPanaderia()
+                ? InicioPanaderiaActivity.class : BuscarLocalesActivity.class;
+        Intent intent = new Intent(this, destino);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    /** Borra la sesión y regresa al login. */
+    protected void cerrarSesion() {
+        sesion.cerrar();
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     /** Al tocar la vista con ese id, abre la pantalla destino. */

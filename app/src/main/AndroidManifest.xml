@@ -19,8 +19,9 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="TU_API_KEY_DE_GOOGLE_MAPS" />
 
+        <!-- Pantalla de arranque -->
         <activity
-            android:name=".MainActivity1"
+            android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,18 +29,21 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".MainActivity2" android:exported="false" />
-        <activity android:name=".MainActivity3" android:exported="false" />
-        <activity android:name=".MainActivity4" android:exported="false" />
-        <activity android:name=".MainActivity5" android:exported="false" />
-        <activity android:name=".MainActivity6" android:exported="false" />
-        <activity android:name=".MainActivity7" android:exported="false" />
-        <activity android:name=".MainActivity8" android:exported="false" />
-        <activity android:name=".MainActivity9" android:exported="false" />
-        <activity android:name=".MainActivity10" android:exported="false" />
-        <activity android:name=".MainActivity11" android:exported="false" />
-        <activity android:name=".MainActivity12" android:exported="false" />
-        <activity android:name=".MainActivity13" android:exported="false" />
+        <activity android:name=".RegistroActivity" android:exported="false" />
+        <activity android:name=".InicioPanaderiaActivity" android:exported="false" />
+        <activity android:name=".BuscarLocalesActivity" android:exported="false" />
+        <activity android:name=".BuscarProductosActivity" android:exported="false" />
+        <activity android:name=".DetalleProductoActivity" android:exported="false" />
+        <activity android:name=".DireccionActivity" android:exported="false" />
+        <activity android:name=".QrActivity" android:exported="false" />
+        <activity android:name=".MisComprasActivity" android:exported="false" />
+        <activity android:name=".DetalleCompraActivity" android:exported="false" />
+        <activity android:name=".PerfilEmpresaActivity" android:exported="false" />
+        <activity android:name=".MisPublicacionesActivity" android:exported="false" />
+        <activity android:name=".EditarPublicacionActivity" android:exported="false" />
+        <activity android:name=".DetallePedidoActivity" android:exported="false" />
+        <activity android:name=".CompraExitosaActivity" android:exported="false" />
+        <activity android:name=".MisPedidosActivity" android:exported="false" />
 
     </application>
 </manifest>
