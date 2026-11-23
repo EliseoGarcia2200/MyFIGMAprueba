@@ -206,6 +206,89 @@ public class DBHelper extends SQLiteOpenHelper {
         return valores;
     }
 
+    // ------------------------------------------------- lo que ve el cliente
+
+    private static final String SELECT_PRODUCTO =
+            "SELECT p.id, p.panaderia_id, p.nombre, p.precio, p.detalles, p.cantidad, "
+                    + "p.caja_sorpresa, p.imagen, u.nombre "
+                    + "FROM publicaciones p JOIN usuarios u ON u.id = p.panaderia_id ";
+
+    /**
+     * Productos con existencias de todas las panaderías (las más nuevas primero).
+     * panaderiaId > 0 limita a una sola panadería; filtro busca en el nombre del
+     * producto o de la panadería y puede ir vacío.
+     */
+    public List<Publicacion> listarProductosDisponibles(long panaderiaId, String filtro) {
+        StringBuilder sql = new StringBuilder(SELECT_PRODUCTO).append("WHERE p.cantidad > 0");
+        List<String> args = new ArrayList<>();
+        if (panaderiaId > 0) {
+            sql.append(" AND p.panaderia_id = ?");
+            args.add(String.valueOf(panaderiaId));
+        }
+        if (filtro != null && !filtro.isEmpty()) {
+            sql.append(" AND (p.nombre LIKE ? OR u.nombre LIKE ?)");
+            args.add("%" + filtro + "%");
+            args.add("%" + filtro + "%");
+        }
+        sql.append(" ORDER BY p.creado DESC");
+
+        List<Publicacion> lista = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+        try (Cursor c = db.rawQuery(sql.toString(), args.toArray(new String[0]))) {
+            while (c.moveToNext()) {
+                lista.add(productoDe(c));
+            }
+        }
+        return lista;
+    }
+
+    /** Un producto con el nombre de su panadería, o null si ya no existe. */
+    public Publicacion obtenerProducto(long id) {
+        SQLiteDatabase db = getReadableDatabase();
+        try (Cursor c = db.rawQuery(SELECT_PRODUCTO + "WHERE p.id = ?",
+                new String[]{String.valueOf(id)})) {
+            return c.moveToFirst() ? productoDe(c) : null;
+        }
+    }
+
+    /** Panaderías que tienen al menos un producto con existencias. filtro busca por nombre. */
+    public List<Local> listarLocales(String filtro) {
+        StringBuilder sql = new StringBuilder(
+                "SELECT u.id, u.nombre, COUNT(p.id) FROM usuarios u "
+                        + "JOIN publicaciones p ON p.panaderia_id = u.id "
+                        + "WHERE u.rol = ? AND p.cantidad > 0");
+        List<String> args = new ArrayList<>();
+        args.add(Usuario.ROL_PANADERIA);
+        if (filtro != null && !filtro.isEmpty()) {
+            sql.append(" AND u.nombre LIKE ?");
+            args.add("%" + filtro + "%");
+        }
+        sql.append(" GROUP BY u.id, u.nombre ORDER BY u.nombre COLLATE NOCASE");
+
+        List<Local> lista = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+        try (Cursor c = db.rawQuery(sql.toString(), args.toArray(new String[0]))) {
+            while (c.moveToNext()) {
+                lista.add(new Local(c.getLong(0), c.getString(1), c.getInt(2)));
+            }
+        }
+        return lista;
+    }
+
+    /** Nombre de un usuario (la panadería), o null si no existe. */
+    public String obtenerNombreUsuario(long id) {
+        SQLiteDatabase db = getReadableDatabase();
+        try (Cursor c = db.query("usuarios", new String[]{"nombre"}, "id = ?",
+                new String[]{String.valueOf(id)}, null, null, null)) {
+            return c.moveToFirst() ? c.getString(0) : null;
+        }
+    }
+
+    private static Publicacion productoDe(Cursor c) {
+        return new Publicacion(c.getLong(0), c.getLong(1), c.getString(2), c.getDouble(3),
+                c.getString(4), c.getInt(5), c.getInt(6) == 1, c.getString(7), c.getString(8));
+    }
+
     // ------------------------------------------------------------- contraseñas
 
     /** Convierte la contraseña en un hash con sal; la contraseña real nunca se guarda. */

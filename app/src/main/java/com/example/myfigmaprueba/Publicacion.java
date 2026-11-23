@@ -12,9 +12,17 @@ public class Publicacion {
     public final boolean cajaSorpresa;
     /** Ruta del archivo de la foto dentro de la app, o null si no tiene foto. */
     public final String imagen;
+    /** Nombre de la panadería. Solo viene lleno cuando el cliente consulta productos. */
+    public final String panaderiaNombre;
 
     public Publicacion(long id, long panaderiaId, String nombre, double precio,
                        String detalles, int cantidad, boolean cajaSorpresa, String imagen) {
+        this(id, panaderiaId, nombre, precio, detalles, cantidad, cajaSorpresa, imagen, null);
+    }
+
+    public Publicacion(long id, long panaderiaId, String nombre, double precio,
+                       String detalles, int cantidad, boolean cajaSorpresa, String imagen,
+                       String panaderiaNombre) {
         this.id = id;
         this.panaderiaId = panaderiaId;
         this.nombre = nombre;
@@ -23,5 +31,6 @@ public class Publicacion {
         this.cantidad = cantidad;
         this.cajaSorpresa = cajaSorpresa;
         this.imagen = imagen;
+        this.panaderiaNombre = panaderiaNombre;
     }
 }

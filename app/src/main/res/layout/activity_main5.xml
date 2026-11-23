@@ -24,6 +24,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="14dp"
+            android:id="@+id/tvTituloTop"
             android:text="Pan Oreja"
             android:textColor="@color/texto_oscuro"
             android:textSize="20sp"
@@ -65,6 +66,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:id="@+id/tvNombreProducto"
                         android:text="Pan de Oreja 3 pzs"
                         android:textColor="@color/texto_oscuro"
                         android:textSize="17sp"
@@ -74,6 +76,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
+                        android:id="@+id/tvSucursal"
                         android:text="Sucursal: Panaderia Lupita"
                         android:textColor="@color/texto_secundario"
                         android:textSize="13sp" />
@@ -97,6 +100,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginHorizontal="6dp"
+                            android:id="@+id/tvFlecha"
                             android:text="→"
                             android:textColor="@color/texto_oscuro"
                             android:textSize="16sp" />
@@ -136,6 +140,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@color/lila_fondo_texto"
                 android:padding="12dp"
+                android:id="@+id/tvDescripcionProducto"
                 android:text="Paquete de 3 piezas de pan de oreja horneado del día, en perfecto estado para consumo."
                 android:textColor="@color/texto_oscuro"
                 android:textSize="13sp" />
@@ -155,6 +160,7 @@
                 android:layout_marginTop="8dp"
                 android:background="@color/lila_fondo_texto"
                 android:padding="12dp"
+                android:id="@+id/tvDescripcionProveedor"
                 android:text="Panadería Lupita. Horario de recolección de excedentes de 18:00 a 21:00 hrs."
                 android:textColor="@color/texto_oscuro"
                 android:textSize="13sp" />

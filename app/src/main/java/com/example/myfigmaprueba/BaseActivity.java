@@ -2,7 +2,10 @@ package com.example.myfigmaprueba;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -95,6 +98,22 @@ public abstract class BaseActivity extends AppCompatActivity {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
+    }
+
+    /** Ejecuta la acción cada vez que cambia el texto del campo (por ejemplo, para filtrar una lista). */
+    protected void alCambiarTexto(EditText campo, Runnable accion) {
+        campo.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) { }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                accion.run();
+            }
+        });
     }
 
     /** Al tocar la vista con ese id, abre la pantalla destino. */
