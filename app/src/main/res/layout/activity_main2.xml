@@ -23,11 +23,12 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:gravity="center"
-                android:text="¡HOLA, PANADERIA!"
+                android:text="¡HOLA!"
                 android:textColor="@color/texto_oscuro"
                 android:textSize="26sp"
                 android:textStyle="bold" />
 
+            <!-- SECCIÓN PUBLICACIONES -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -35,6 +36,15 @@
                 android:text="Tus publicaciones recientes"
                 android:textColor="@color/texto_oscuro"
                 android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/tvSinPublicaciones"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Aún no tienes publicaciones. Toca 'Ver mas' o Perfil para agregar una."
+                android:textColor="@color/texto_secundario"
+                android:textSize="14sp" />
 
             <HorizontalScrollView
                 android:layout_width="match_parent"
@@ -48,55 +58,12 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
+                    <!-- Aquí se agregan las publicaciones reales desde Java -->
                     <LinearLayout
-                        android:layout_width="115dp"
+                        android:id="@+id/contenedorPublicaciones"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="14dp"
-                        android:orientation="vertical">
-                        <ImageView
-                            android:layout_width="110dp"
-                            android:layout_height="110dp"
-                            android:background="@color/gris_placeholder"
-                            android:scaleType="centerCrop"
-                            android:src="@android:drawable/ic_menu_gallery" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:text="Pan Oreja"
-                            android:textColor="@color/texto_oscuro" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="$45"
-                            android:textColor="@color/texto_oscuro"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="115dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="14dp"
-                        android:orientation="vertical">
-                        <ImageView
-                            android:layout_width="110dp"
-                            android:layout_height="110dp"
-                            android:background="@color/gris_placeholder"
-                            android:scaleType="centerCrop"
-                            android:src="@android:drawable/ic_menu_gallery" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:text="Pan Yoyo"
-                            android:textColor="@color/texto_oscuro" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="$37"
-                            android:textColor="@color/texto_oscuro"
-                            android:textStyle="bold" />
-                    </LinearLayout>
+                        android:orientation="horizontal" />
 
                     <TextView
                         android:id="@+id/btnVerMasPublicaciones"
@@ -110,6 +77,7 @@
                 </LinearLayout>
             </HorizontalScrollView>
 
+            <!-- SECCIÓN PEDIDOS -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -117,6 +85,15 @@
                 android:text="Pedidos recientes"
                 android:textColor="@color/texto_oscuro"
                 android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/tvSinPedidos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Todavía no tienes pedidos recientes."
+                android:textColor="@color/texto_secundario"
+                android:textSize="14sp" />
 
             <HorizontalScrollView
                 android:layout_width="match_parent"
@@ -130,53 +107,12 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
+                    <!-- Aquí se agregan los pedidos reales desde Java -->
                     <LinearLayout
-                        android:layout_width="115dp"
+                        android:id="@+id/contenedorPedidos"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="14dp"
-                        android:orientation="vertical">
-                        <ImageView
-                            android:layout_width="110dp"
-                            android:layout_height="110dp"
-                            android:background="@color/gris_placeholder"
-                            android:src="@android:drawable/ic_menu_gallery" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:text="Panaderia 1"
-                            android:textColor="@color/texto_oscuro" />
-                        <RatingBar
-                            style="?android:attr/ratingBarStyleSmall"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:numStars="5"
-                            android:rating="4" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="115dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="14dp"
-                        android:orientation="vertical">
-                        <ImageView
-                            android:layout_width="110dp"
-                            android:layout_height="110dp"
-                            android:background="@color/gris_placeholder"
-                            android:src="@android:drawable/ic_menu_gallery" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:text="Panaderia 2"
-                            android:textColor="@color/texto_oscuro" />
-                        <RatingBar
-                            style="?android:attr/ratingBarStyleSmall"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:numStars="5"
-                            android:rating="3" />
-                    </LinearLayout>
+                        android:orientation="horizontal" />
 
                     <TextView
                         android:id="@+id/btnVerMasPedidos"
