@@ -24,6 +24,7 @@ public class MisPublicacionesActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (!verificarAcceso()) return;
         mostrarPantalla(R.layout.activity_main11);
 
         db = new DBHelper(this);
@@ -60,6 +61,7 @@ public class MisPublicacionesActivity extends BaseActivity {
     }
 
     private void cargarLista() {
+        if (db == null || isFinishing()) return;
         String filtro = etBuscar.getText().toString().trim();
         List<Publicacion> lista = db.listarPublicaciones(sesion.getId(), filtro);
         adapter.actualizar(lista);
@@ -77,4 +79,6 @@ public class MisPublicacionesActivity extends BaseActivity {
         intent.putExtra(EditarPublicacionActivity.EXTRA_ID, publicacion.id);
         startActivity(intent);
     }
+    @Override protected void alActualizarTiempo() { cargarLista(); }
+    @Override protected void onDestroy() { if (db != null) db.close(); super.onDestroy(); }
 }

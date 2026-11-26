@@ -68,4 +68,5 @@ public class RegistroActivity extends BaseActivity {
         Toast.makeText(this, "¡Cuenta creada!", Toast.LENGTH_SHORT).show();
         irAInicioSegunRol();
     }
+    @Override protected void onDestroy() { if (db != null) db.close(); super.onDestroy(); }
 }

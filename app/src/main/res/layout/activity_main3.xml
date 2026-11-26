@@ -44,12 +44,17 @@
     <!-- Mapa de Google Maps -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/mapBusqueda"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="12dp"
         app:layout_constraintBottom_toTopOf="@id/guidelineMapa"
         app:layout_constraintTop_toBottomOf="@id/tabsBusqueda" />
+
+    <TextView android:id="@+id/tvMapaNoDisponible" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:layout_marginTop="78dp" android:paddingHorizontal="24dp"
+        android:text="Consulta las panaderías en la lista. El mapa necesita una clave de Google Maps y los servicios de Google."
+        android:textColor="@color/texto_secundario" android:textSize="14sp" android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/mapBusqueda" />
 
     <!-- Línea guía para dividir Mapa (arriba) y Lista de panaderías (abajo) -->
     <androidx.constraintlayout.widget.Guideline

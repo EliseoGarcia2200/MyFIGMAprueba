@@ -22,6 +22,7 @@ public class InicioPanaderiaActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (!verificarAcceso()) return;
         mostrarPantalla(R.layout.activity_main2);
 
         db = new DBHelper(this);
@@ -34,6 +35,8 @@ public class InicioPanaderiaActivity extends BaseActivity {
 
         alTocar(R.id.btnVerMasPublicaciones, MisPublicacionesActivity.class);
         alTocar(R.id.btnVerMasPedidos, MisPedidosActivity.class);
+        LinearLayout principal = (LinearLayout) saludo.getParent();
+        Pantalla.boton(principal, "Configurar perfil y recolección", v -> startActivity(new Intent(this, PerfilEmpresaActivity.class)));
     }
 
     @Override
@@ -43,6 +46,8 @@ public class InicioPanaderiaActivity extends BaseActivity {
     }
 
     private void cargarPublicacionesRecientes() {
+        if (db == null || isFinishing()) return;
+        cargarPedidosRecientes();
         contenedorPublicaciones.removeAllViews();
 
         List<Publicacion> lista = db.listarPublicaciones(sesion.getId(), "");
@@ -81,7 +86,7 @@ public class InicioPanaderiaActivity extends BaseActivity {
         img.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
         if (pub.imagen != null && !pub.imagen.isEmpty()) {
-            Bitmap bmp = BitmapFactory.decodeFile(pub.imagen);
+            Bitmap bmp = ImagenUtil.cargar(pub.imagen, 160);
             if (bmp != null) {
                 img.setImageBitmap(bmp);
             } else {
@@ -118,4 +123,26 @@ public class InicioPanaderiaActivity extends BaseActivity {
 
         return card;
     }
+
+    @Override protected void alActualizarTiempo() { cargarPublicacionesRecientes(); }
+
+    private void cargarPedidosRecientes() {
+        LinearLayout panel = findViewById(R.id.contenedorPedidos); panel.removeAllViews();
+        List<Pedido> pedidos = db.listarPedidos(sesion.getId(), "");
+        findViewById(R.id.tvSinPedidos).setVisibility(pedidos.isEmpty() ? View.VISIBLE : View.GONE);
+        for (int i = 0; i < Math.min(5, pedidos.size()); i++) {
+            Pedido pedido = pedidos.get(i);
+            TextView tarjeta = new TextView(this);
+            tarjeta.setText(pedido.folio() + "\n" + pedido.cliente + "\n" + pedido.producto
+                    + "\n" + pedido.estadoTexto() + "\n" + Dinero.formato(pedido.totalCentavos()));
+            tarjeta.setTextSize(14); tarjeta.setTextColor(getResources().getColor(R.color.texto_oscuro));
+            tarjeta.setBackgroundResource(R.drawable.bg_input);
+            int espacio = Pantalla.dp(panel, 12); tarjeta.setPadding(espacio, espacio, espacio, espacio);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(Pantalla.dp(panel, 220), -2);
+            lp.setMarginEnd(espacio); panel.addView(tarjeta, lp);
+            tarjeta.setOnClickListener(v -> startActivity(new Intent(this, DetallePedidoActivity.class).putExtra(Pedido.EXTRA_ID, pedido.id)));
+        }
+    }
+
+    @Override protected void onDestroy() { if (db != null) db.close(); super.onDestroy(); }
 }

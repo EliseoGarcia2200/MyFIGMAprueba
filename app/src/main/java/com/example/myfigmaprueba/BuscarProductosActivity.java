@@ -25,6 +25,7 @@ public class BuscarProductosActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (!verificarAcceso()) return;
         mostrarPantalla(R.layout.activity_main4);
 
         db = new DBHelper(this);
@@ -55,6 +56,7 @@ public class BuscarProductosActivity extends BaseActivity {
     }
 
     private void cargarLista() {
+        if (db == null || isFinishing()) return;
         String filtro = etBuscar.getText().toString().trim();
         List<Publicacion> productos = db.listarProductosDisponibles(panaderiaId, filtro);
         adapter.actualizar(productos);
@@ -70,4 +72,6 @@ public class BuscarProductosActivity extends BaseActivity {
         intent.putExtra(DetalleProductoActivity.EXTRA_ID, producto.id);
         startActivity(intent);
     }
+    @Override protected void alActualizarTiempo() { cargarLista(); }
+    @Override protected void onDestroy() { if (db != null) db.close(); super.onDestroy(); }
 }
