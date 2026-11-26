@@ -50,6 +50,7 @@ public class EditarPublicacionActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (!verificarAcceso()) return;
         mostrarPantalla(R.layout.activity_main13);
 
         db = new DBHelper(this);
@@ -107,6 +108,7 @@ public class EditarPublicacionActivity extends BaseActivity {
         if (isFinishing() && !guardado) {
             ImagenUtil.borrar(imagenNueva);
         }
+        if (db != null) db.close();
     }
 
     // ------------------------------------------------------------------ fotos
@@ -168,13 +170,9 @@ public class EditarPublicacionActivity extends BaseActivity {
 
         double precio;
         try {
-            precio = Double.parseDouble(etPrecio.getText().toString().trim().replace(',', '.'));
-        } catch (NumberFormatException e) {
-            etPrecio.setError("Precio no válido");
-            return;
-        }
-        if (precio <= 0) {
-            etPrecio.setError("Debe ser mayor a 0");
+            precio = Dinero.centavos(etPrecio.getText().toString()) / 100.0;
+        } catch (IllegalArgumentException e) {
+            etPrecio.setError(e.getMessage());
             return;
         }
 
@@ -185,8 +183,8 @@ public class EditarPublicacionActivity extends BaseActivity {
             etCantidad.setError("Cantidad no válida");
             return;
         }
-        if (cantidad < 1) {
-            etCantidad.setError("Mínimo 1");
+        if (cantidad < 0 || cantidad > 10000) {
+            etCantidad.setError("Cantidad entre 0 y 10,000. Usa 0 si está agotado.");
             return;
         }
 
@@ -212,7 +210,7 @@ public class EditarPublicacionActivity extends BaseActivity {
 
         guardado = true;
         // Si se cambió la foto, la anterior ya no sirve.
-        if (imagenNueva != null && imagenGuardada != null) {
+        if (imagenNueva != null && imagenGuardada != null && !db.imagenEnPedidos(imagenGuardada)) {
             ImagenUtil.borrar(imagenGuardada);
         }
         Toast.makeText(this, "Publicación guardada", Toast.LENGTH_SHORT).show();
@@ -225,10 +223,12 @@ public class EditarPublicacionActivity extends BaseActivity {
                 .setMessage("¿Seguro que quieres eliminarla? Esta acción no se puede deshacer.")
                 .setPositiveButton("Eliminar", (dialogo, cual) -> {
                     if (db.eliminarPublicacion(idEditando, sesion.getId())) {
-                        ImagenUtil.borrar(imagenGuardada);
+                        if (!db.imagenEnPedidos(imagenGuardada)) ImagenUtil.borrar(imagenGuardada);
+                        Toast.makeText(this, "Publicación eliminada", Toast.LENGTH_SHORT).show();
+                        finish();
+                    } else {
+                        Toast.makeText(this, "No se pudo eliminar la publicación", Toast.LENGTH_SHORT).show();
                     }
-                    Toast.makeText(this, "Publicación eliminada", Toast.LENGTH_SHORT).show();
-                    finish();
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();

@@ -6,6 +6,11 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.LinearLayout;
+import android.widget.Toast;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -21,12 +26,49 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     /** Sesión del usuario actual (disponible desde onCreate en todas las pantallas). */
     protected SesionManager sesion;
+    private final Handler refresco = new Handler(Looper.getMainLooper());
+    private final Runnable reloj = new Runnable() {
+        @Override public void run() {
+            if (!isFinishing() && sesion.haySesion()) alActualizarTiempo();
+            refresco.postDelayed(this, 30000);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sesion = new SesionManager(this);
     }
+
+    /** La pantalla y la base validan el rol; ocultar botones por sí solo no concede permisos. */
+    protected boolean verificarAcceso() {
+        try (DBHelper db = new DBHelper(this)) {
+            Usuario u = db.obtenerUsuario(sesion.getId());
+            if (u == null) { cerrarSesion(); return false; }
+            sesion.iniciar(u);
+        }
+        Class<?> pantalla = getClass();
+        boolean empresa = pantalla == InicioPanaderiaActivity.class || pantalla == MisPublicacionesActivity.class
+                || pantalla == EditarPublicacionActivity.class || pantalla == MisPedidosActivity.class
+                || pantalla == DetallePedidoActivity.class;
+        boolean cliente = pantalla == MisComprasActivity.class || pantalla == DetalleCompraActivity.class
+                || pantalla == QrActivity.class || pantalla == CompraExitosaActivity.class;
+        if ((empresa && !sesion.esPanaderia()) || (cliente && sesion.esPanaderia())) {
+            Toast.makeText(this, "Esta sección no corresponde a tu tipo de cuenta", Toast.LENGTH_SHORT).show();
+            irAInicioSegunRol(); return false;
+        }
+        return true;
+    }
+
+    @Override protected void onStart() {
+        super.onStart(); refresco.postDelayed(reloj, 30000);
+    }
+
+    @Override protected void onStop() {
+        refresco.removeCallbacks(reloj); super.onStop();
+    }
+
+    protected void alActualizarTiempo() { }
 
     /** Se usa en lugar de setContentView(). Llámalo desde onCreate de cada pantalla. */
     protected void mostrarPantalla(int layoutId) {
@@ -63,7 +105,14 @@ public abstract class BaseActivity extends AppCompatActivity {
                     sesion.esPanaderia() ? InicioPanaderiaActivity.class : BuscarLocalesActivity.class));
         }
         navegarDesdeBarra(R.id.navBuscar, BuscarLocalesActivity.class);
-        navegarDesdeBarra(R.id.navCompras, MisComprasActivity.class);
+        navegarDesdeBarra(R.id.navCompras, sesion.esPanaderia() ? MisPedidosActivity.class : MisComprasActivity.class);
+        LinearLayout compras = findViewById(R.id.navCompras);
+        if (compras != null) {
+            for (int i = 0; i < compras.getChildCount(); i++) {
+                if (compras.getChildAt(i) instanceof TextView)
+                    ((TextView) compras.getChildAt(i)).setText(sesion.esPanaderia() ? "Pedidos" : "Compras");
+            }
+        }
         navegarDesdeBarra(R.id.navPerfil, PerfilEmpresaActivity.class);
     }
 
