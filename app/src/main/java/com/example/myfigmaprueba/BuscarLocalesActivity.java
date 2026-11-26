@@ -21,6 +21,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.constraintlayout.widget.Guideline;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -59,6 +60,7 @@ public class BuscarLocalesActivity extends BaseActivity implements OnMapReadyCal
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (!verificarAcceso()) return;
         mostrarPantalla(R.layout.activity_main3);
 
         db = new DBHelper(this);
@@ -130,10 +132,16 @@ public class BuscarLocalesActivity extends BaseActivity implements OnMapReadyCal
             }
         });
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.mapBusqueda);
-        if (mapFragment != null) {
+        if (MapasUtil.disponible(this)) {
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapBusqueda);
+            if (mapFragment == null) {
+                mapFragment = SupportMapFragment.newInstance();
+                getSupportFragmentManager().beginTransaction().replace(R.id.mapBusqueda, mapFragment).commitNow();
+            }
             mapFragment.getMapAsync(this);
+        } else {
+            ((Guideline) findViewById(R.id.guidelineMapa)).setGuidelinePercent(0.32f);
+            findViewById(R.id.tvMapaNoDisponible).setVisibility(View.VISIBLE);
         }
     }
 
@@ -145,11 +153,13 @@ public class BuscarLocalesActivity extends BaseActivity implements OnMapReadyCal
     }
 
     private void buscarSugerenciasEnMapa(String query, boolean irAlPrimero) {
+        if (isFinishing() || executor.isShutdown() || !Geocoder.isPresent()) return;
         executor.execute(() -> {
             Geocoder geocoder = new Geocoder(this, Locale.getDefault());
             try {
-                List<Address> direcciones = geocoder.getFromLocationName(query + ", Puebla, Mexico", 5);
+                List<Address> direcciones = geocoder.getFromLocationName(query, 5);
                 handler.post(() -> {
+                    if (isFinishing() || isDestroyed() || !query.equals(etBuscar.getText().toString().trim())) return;
                     resultadosMapa.clear();
                     textosSugerencias.clear();
 
@@ -174,8 +184,8 @@ public class BuscarLocalesActivity extends BaseActivity implements OnMapReadyCal
                         }
                     }
                 });
-            } catch (IOException e) {
-                handler.post(() -> lvSugerencias.setVisibility(View.GONE));
+            } catch (IOException | IllegalArgumentException e) {
+                handler.post(() -> { if (!isDestroyed()) lvSugerencias.setVisibility(View.GONE); });
             }
         });
     }
@@ -208,15 +218,12 @@ public class BuscarLocalesActivity extends BaseActivity implements OnMapReadyCal
         mMap.getUiSettings().setZoomGesturesEnabled(true);
         mMap.getUiSettings().setScrollGesturesEnabled(true);
 
-        mMap.addMarker(new MarkerOptions()
-                .position(puebla)
-                .title("Panadería Lupita")
-                .snippet("Con excedentes"));
-
-        mMap.addMarker(new MarkerOptions()
-                .position(new LatLng(19.0040, -98.1980))
-                .title("Panadería Esperanza")
-                .snippet("Con excedentes"));
+        mMap.setOnInfoWindowClickListener(marcador -> {
+            Object id = marcador.getTag();
+            if (id instanceof Long) startActivity(new Intent(this, BuscarProductosActivity.class)
+                    .putExtra(BuscarProductosActivity.EXTRA_PANADERIA_ID, (long) id));
+        });
+        cargarLista();
     }
 
     @Override
@@ -226,9 +233,21 @@ public class BuscarLocalesActivity extends BaseActivity implements OnMapReadyCal
     }
 
     private void cargarLista() {
+        if (db == null || isFinishing()) return;
         String filtro = etBuscar.getText().toString().trim();
         List<Local> locales = db.listarLocales(filtro);
         adapter.actualizar(locales);
+        if (mMap != null) {
+            mMap.clear(); marcadorBusqueda = null;
+            for (Local local : locales) {
+                Negocio negocio = db.obtenerNegocio(local.id);
+                if (negocio != null && negocio.tieneUbicacion()) {
+                    Marker marcador = mMap.addMarker(new MarkerOptions().position(new LatLng(negocio.latitud, negocio.longitud))
+                            .title(negocio.nombre).snippet(negocio.direccion + " · Toca para ver productos"));
+                    if (marcador != null) marcador.setTag(negocio.id);
+                }
+            }
+        }
 
         tvSinLocales.setVisibility(locales.isEmpty() ? View.VISIBLE : View.GONE);
         tvSinLocales.setText(filtro.isEmpty()
@@ -240,5 +259,10 @@ public class BuscarLocalesActivity extends BaseActivity implements OnMapReadyCal
         Intent intent = new Intent(this, BuscarProductosActivity.class);
         intent.putExtra(BuscarProductosActivity.EXTRA_PANADERIA_ID, local.id);
         startActivity(intent);
+    }
+    @Override protected void alActualizarTiempo() { cargarLista(); }
+    @Override protected void onDestroy() {
+        handler.removeCallbacksAndMessages(null); executor.shutdownNow();
+        if (db != null) db.close(); super.onDestroy();
     }
 }

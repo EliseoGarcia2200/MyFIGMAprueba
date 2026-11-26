@@ -15,6 +15,8 @@ public class LoginActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getApplication() instanceof DiagnosticoInicio
+                && ((DiagnosticoInicio) getApplication()).mostrarInformePendiente(this)) return;
 
         // Si ya había una sesión guardada, se salta el login.
         if (sesion.haySesion()) {
@@ -49,4 +51,5 @@ public class LoginActivity extends BaseActivity {
         sesion.iniciar(usuario);
         irAInicioSegunRol();
     }
+    @Override protected void onDestroy() { if (db != null) db.close(); super.onDestroy(); }
 }

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="id" name="etNegocioDireccion" />
+    <item type="id" name="etNegocioHorario" />
+    <item type="id" name="etNegocioTelefono" />
+    <item type="id" name="etNegocioDescripcion" />
+    <item type="id" name="etNegocioLatitud" />
+    <item type="id" name="etNegocioLongitud" />
+    <item type="id" name="etMapaLatitud" />
+    <item type="id" name="etMapaLongitud" />
+    <item type="id" name="mapSeleccion" />
+</resources>
