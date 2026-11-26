@@ -12,5 +12,6 @@
     <color name="amarillo_texto">#B45309</color>
     <color name="texto_oscuro">#1F1F1F</color>
     <color name="texto_secundario">#666666</color>
+    <color name="verde_disponible">#16A34A</color>
     <color name="blanco">#FFFFFF</color>
 </resources>

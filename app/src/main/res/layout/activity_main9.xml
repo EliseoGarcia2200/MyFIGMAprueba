@@ -23,7 +23,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="14dp"
+            android:layout_marginStart="16dp"
             android:text="DETALLES DE COMPRA"
             android:textColor="@color/texto_oscuro"
             android:textSize="18sp"
@@ -42,6 +42,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!-- Cabecera del producto -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -49,127 +50,137 @@
                 android:orientation="horizontal">
 
                 <ImageView
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
+                    android:layout_width="86dp"
+                    android:layout_height="86dp"
                     android:background="@color/gris_placeholder"
+                    android:padding="12dp"
                     android:src="@android:drawable/ic_menu_gallery" />
 
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="14dp"
+                    android:layout_weight="1"
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/tvNombreProdCompra"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Producto"
+                        android:text="Caja Sorpresa de Pan Dulce"
                         android:textColor="@color/texto_oscuro"
-                        android:textSize="17sp"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
                         android:text="Estatus: Por recoger"
                         android:textColor="@color/texto_secundario"
                         android:textSize="13sp" />
 
                     <TextView
+                        android:id="@+id/tvPrecioProdCompra"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="$50 → $25"
-                        android:textColor="@color/verde_texto"
+                        android:text="$90  →  $45"
+                        android:textColor="@color/verde_disponible"
                         android:textSize="15sp"
                         android:textStyle="bold" />
 
-                    <RatingBar
-                        style="?android:attr/ratingBarStyleSmall"
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:numStars="5"
-                        android:rating="4" />
+                        android:text="★★★★☆"
+                        android:textColor="#4B5563"
+                        android:textSize="14sp" />
                 </LinearLayout>
             </LinearLayout>
 
+            <!-- Detalles del producto -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="22dp"
                 android:text="Detalles del producto ⌄"
                 android:textColor="@color/texto_oscuro"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:background="@color/lila_fondo_texto"
+                android:layout_marginTop="8dp"
+                android:background="#FAF5FF"
                 android:padding="12dp"
-                android:text="Descripción del producto adquirido."
+                android:text="Surtido de 5 piezas de pan dulce del día horneado hoy."
                 android:textColor="@color/texto_oscuro"
                 android:textSize="13sp" />
 
+            <!-- Detalles del proveedor -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="18dp"
                 android:text="Detalles del proveedor ⌄"
                 android:textColor="@color/texto_oscuro"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:background="@color/lila_fondo_texto"
+                android:layout_marginTop="8dp"
+                android:background="#FAF5FF"
                 android:padding="12dp"
-                android:text="Información del local, dirección y horario de entrega."
+                android:text="Panadería Lupita • Av. San Claudio, Zona CU, Puebla.\nHorario de entrega: 18:00 a 20:30 hrs."
                 android:textColor="@color/texto_oscuro"
                 android:textSize="13sp" />
 
+            <!-- Detalles de compra + Botones -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="18dp"
                 android:text="Detalles de compra ⌄"
                 android:textColor="@color/texto_oscuro"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                android:gravity="center"
+                android:layout_marginTop="12dp"
                 android:orientation="horizontal">
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnVerFactura"
                     android:layout_width="0dp"
                     android:layout_height="44dp"
-                    android:layout_marginEnd="10dp"
+                    android:layout_marginEnd="8dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_boton_naranja"
                     android:text="Ver factura"
                     android:textAllCaps="false"
-                    android:textColor="@color/blanco" />
+                    android:textColor="@color/blanco"
+                    android:textStyle="bold" />
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnVerQr"
                     android:layout_width="0dp"
                     android:layout_height="44dp"
-                    android:layout_marginStart="10dp"
+                    android:layout_marginStart="8dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_boton_naranja"
                     android:text="Ver QR"
                     android:textAllCaps="false"
-                    android:textColor="@color/blanco" />
+                    android:textColor="@color/blanco"
+                    android:textStyle="bold" />
             </LinearLayout>
+
         </LinearLayout>
     </ScrollView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -25,7 +25,7 @@ import javax.crypto.spec.PBEKeySpec;
 public class DBHelper extends SQLiteOpenHelper {
 
     private static final String DB_NOMBRE = "cero_desperdicio.db";
-    private static final int DB_VERSION = 3;
+    private static final int DB_VERSION = 4;
     private static final int ITERACIONES = 10000;
 
     public DBHelper(Context context) {
@@ -43,9 +43,9 @@ public class DBHelper extends SQLiteOpenHelper {
                 + "rol TEXT NOT NULL, "
                 + "creado INTEGER NOT NULL)");
         crearTablaPublicaciones(db);
+        insertarDatosDePrueba(db);
     }
 
-    /** Agrega una columna solo si todavía no existe (así la migración nunca falla por repetirse). */
     private static void agregarColumnaSiFalta(SQLiteDatabase db, String tabla,
                                               String columna, String definicion) {
         try (Cursor c = db.rawQuery("PRAGMA table_info(" + tabla + ")", null)) {
@@ -72,15 +72,71 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int versionVieja, int versionNueva) {
-        // Cada versión nueva agrega lo que le falta SIN borrar los datos existentes.
         if (versionVieja < 2) {
-            crearTablaPublicaciones(db); // ya trae todas las columnas actuales
+            crearTablaPublicaciones(db);
         }
         if (versionVieja < 3) {
-            // Versión 3: foto de la publicación (ruta del archivo).
             agregarColumnaSiFalta(db, "publicaciones", "imagen", "TEXT");
         }
-        // Versión 4 en adelante: agregar aquí abajo con agregarColumnaSiFalta(...).
+        if (versionVieja < 4) {
+            insertarDatosDePrueba(db);
+        }
+    }
+
+    // --------------------------------------------------------- datos de prueba
+
+    private void insertarDatosDePrueba(SQLiteDatabase db) {
+        try (Cursor c = db.rawQuery("SELECT COUNT(*) FROM publicaciones", null)) {
+            if (c.moveToFirst() && c.getInt(0) > 0) return;
+        }
+
+        long ahora = System.currentTimeMillis();
+        byte[] salt = new byte[16];
+        new SecureRandom().nextBytes(salt);
+        String saltB64 = Base64.encodeToString(salt, Base64.NO_WRAP);
+        String hash = hashear("123456", salt);
+
+        ContentValues p1 = new ContentValues();
+        p1.put("nombre", "Panadería Lupita");
+        p1.put("correo", "lupita@pan.com");
+        p1.put("password_hash", hash);
+        p1.put("salt", saltB64);
+        p1.put("rol", Usuario.ROL_PANADERIA);
+        p1.put("creado", ahora);
+        long idLupita = db.insertWithOnConflict("usuarios", null, p1, SQLiteDatabase.CONFLICT_IGNORE);
+
+        ContentValues p2 = new ContentValues();
+        p2.put("nombre", "Panadería La Esperanza");
+        p2.put("correo", "esperanza@pan.com");
+        p2.put("password_hash", hash);
+        p2.put("salt", saltB64);
+        p2.put("rol", Usuario.ROL_PANADERIA);
+        p2.put("creado", ahora);
+        long idEsperanza = db.insertWithOnConflict("usuarios", null, p2, SQLiteDatabase.CONFLICT_IGNORE);
+
+        if (idLupita != -1) {
+            insertarPubDemo(db, idLupita, "Pan de Oreja (3 pzs)", 25.0, "Horneado hoy por la mañana, crujiente.", 8, 0, ahora);
+            insertarPubDemo(db, idLupita, "Caja Sorpresa Dulce", 45.0, "Surtido de 5 piezas de pan dulce del día.", 5, 1, ahora);
+        }
+        if (idEsperanza != -1) {
+            insertarPubDemo(db, idEsperanza, "Conchas de Vainilla (4 pzs)", 30.0, "Excedente del turno vespertino.", 6, 0, ahora);
+            insertarPubDemo(db, idEsperanza, "Bolillos Artesanales (6 pzs)", 18.0, "Ideales para tortas o molletes.", 10, 0, ahora);
+        }
+    }
+
+    private void insertarPubDemo(SQLiteDatabase db, long panaderiaId, String nombre,
+                                 double precio, String detalles, int cantidad,
+                                 int cajaSorpresa, long creado) {
+        ContentValues v = new ContentValues();
+        v.put("panaderia_id", panaderiaId);
+        v.put("nombre", nombre);
+        v.put("precio", precio);
+        v.put("detalles", detalles);
+        v.put("cantidad", cantidad);
+        v.put("caja_sorpresa", cajaSorpresa);
+        v.put("imagen", (String) null);
+        v.put("creado", creado);
+        db.insert("publicaciones", null, v);
     }
 
     // ---------------------------------------------------------------- usuarios
@@ -93,7 +149,6 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
-    /** Guarda un usuario nuevo. Devuelve su id, o -1 si no se pudo guardar. */
     public long registrarUsuario(String nombre, String correo, String password, String rol) {
         byte[] salt = new byte[16];
         new SecureRandom().nextBytes(salt);
@@ -108,7 +163,6 @@ public class DBHelper extends SQLiteOpenHelper {
         return getWritableDatabase().insert("usuarios", null, valores);
     }
 
-    /** Devuelve el usuario si el correo y la contraseña son correctos; si no, null. */
     public Usuario iniciarSesion(String correo, String password) {
         SQLiteDatabase db = getReadableDatabase();
         try (Cursor c = db.query("usuarios",
@@ -130,14 +184,12 @@ public class DBHelper extends SQLiteOpenHelper {
 
     // ---------------------------------------------------------- publicaciones
 
-    /** Guarda una publicación nueva. Devuelve su id, o -1 si no se pudo guardar. */
     public long insertarPublicacion(Publicacion p) {
         ContentValues valores = valoresDe(p);
         valores.put("creado", System.currentTimeMillis());
         return getWritableDatabase().insert("publicaciones", null, valores);
     }
 
-    /** Actualiza una publicación (solo si pertenece a esa panadería). */
     public boolean actualizarPublicacion(Publicacion p) {
         int filas = getWritableDatabase().update("publicaciones", valoresDe(p),
                 "id = ? AND panaderia_id = ?",
@@ -145,7 +197,6 @@ public class DBHelper extends SQLiteOpenHelper {
         return filas > 0;
     }
 
-    /** Elimina una publicación (solo si pertenece a esa panadería). */
     public boolean eliminarPublicacion(long id, long panaderiaId) {
         int filas = getWritableDatabase().delete("publicaciones",
                 "id = ? AND panaderia_id = ?",
@@ -163,7 +214,6 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
-    /** Publicaciones de una panadería, las más nuevas primero. filtro puede ir vacío. */
     public List<Publicacion> listarPublicaciones(long panaderiaId, String filtro) {
         String where = "panaderia_id = ?";
         String[] args;
@@ -213,11 +263,6 @@ public class DBHelper extends SQLiteOpenHelper {
                     + "p.caja_sorpresa, p.imagen, u.nombre "
                     + "FROM publicaciones p JOIN usuarios u ON u.id = p.panaderia_id ";
 
-    /**
-     * Productos con existencias de todas las panaderías (las más nuevas primero).
-     * panaderiaId > 0 limita a una sola panadería; filtro busca en el nombre del
-     * producto o de la panadería y puede ir vacío.
-     */
     public List<Publicacion> listarProductosDisponibles(long panaderiaId, String filtro) {
         StringBuilder sql = new StringBuilder(SELECT_PRODUCTO).append("WHERE p.cantidad > 0");
         List<String> args = new ArrayList<>();
@@ -242,7 +287,6 @@ public class DBHelper extends SQLiteOpenHelper {
         return lista;
     }
 
-    /** Un producto con el nombre de su panadería, o null si ya no existe. */
     public Publicacion obtenerProducto(long id) {
         SQLiteDatabase db = getReadableDatabase();
         try (Cursor c = db.rawQuery(SELECT_PRODUCTO + "WHERE p.id = ?",
@@ -251,7 +295,6 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
-    /** Panaderías que tienen al menos un producto con existencias. filtro busca por nombre. */
     public List<Local> listarLocales(String filtro) {
         StringBuilder sql = new StringBuilder(
                 "SELECT u.id, u.nombre, COUNT(p.id) FROM usuarios u "
@@ -275,7 +318,6 @@ public class DBHelper extends SQLiteOpenHelper {
         return lista;
     }
 
-    /** Nombre de un usuario (la panadería), o null si no existe. */
     public String obtenerNombreUsuario(long id) {
         SQLiteDatabase db = getReadableDatabase();
         try (Cursor c = db.query("usuarios", new String[]{"nombre"}, "id = ?",
@@ -291,7 +333,6 @@ public class DBHelper extends SQLiteOpenHelper {
 
     // ------------------------------------------------------------- contraseñas
 
-    /** Convierte la contraseña en un hash con sal; la contraseña real nunca se guarda. */
     private static String hashear(String password, byte[] salt) {
         try {
             PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERACIONES, 256);
