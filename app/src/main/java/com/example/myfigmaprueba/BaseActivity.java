@@ -2,15 +2,15 @@ package com.example.myfigmaprueba;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
-import android.os.Handler;
-import android.os.Looper;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -96,13 +96,17 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     }
 
-    /** Si la pantalla incluye layout_bottom_nav, conecta sus 4 botones. */
+    /** Si la pantalla incluye layout_bottom_nav, conecta sus botones según el rol. */
     private void configurarBarraInferior() {
         View inicio = findViewById(R.id.navInicio);
         if (inicio != null) {
-            // "Inicio" depende del rol: la panadería ve su panel, el cliente ve el buscador.
-            inicio.setOnClickListener(v -> irASeccion(
-                    sesion.esPanaderia() ? InicioPanaderiaActivity.class : BuscarLocalesActivity.class));
+            if (sesion.esPanaderia()) {
+                inicio.setVisibility(View.VISIBLE);
+                inicio.setOnClickListener(v -> irASeccion(InicioPanaderiaActivity.class));
+            } else {
+                // Para cliente se oculta "Inicio" porque ya entra directo a "Buscar"
+                inicio.setVisibility(View.GONE);
+            }
         }
         navegarDesdeBarra(R.id.navBuscar, BuscarLocalesActivity.class);
         navegarDesdeBarra(R.id.navCompras, sesion.esPanaderia() ? MisPedidosActivity.class : MisComprasActivity.class);
