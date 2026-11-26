@@ -28,6 +28,10 @@ public class PerfilEmpresaActivity extends BaseActivity {
             Usuario u = db.obtenerUsuario(sesion.getId());
             Pantalla.texto(panel, u.nombre, true);
             Pantalla.texto(panel, u.correo + "\nCuenta de " + (sesion.esPanaderia() ? "panadería" : "cliente"), false);
+
+            // Botón visible arriba sin tener que hacer scroll
+            Pantalla.boton(panel, "Cerrar sesión", v -> cerrarSesion());
+
             if (sesion.esPanaderia()) {
                 Negocio n = db.obtenerNegocio(u.id);
                 Pantalla.texto(panel, "Datos de recolección", true);
@@ -56,7 +60,6 @@ public class PerfilEmpresaActivity extends BaseActivity {
             Pantalla.boton(panel, sesion.esPanaderia() ? "Mis pedidos" : "Mis compras", v -> startActivity(new Intent(this,
                     sesion.esPanaderia() ? MisPedidosActivity.class : MisComprasActivity.class)));
         }
-        Pantalla.boton(panel, "Cerrar sesión", v -> cerrarSesion());
     }
 
     private Double coordenada(EditText campo) {

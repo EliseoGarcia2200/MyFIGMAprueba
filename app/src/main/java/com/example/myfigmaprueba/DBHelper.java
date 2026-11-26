@@ -25,7 +25,7 @@ import javax.crypto.spec.PBEKeySpec;
 public class DBHelper extends SQLiteOpenHelper {
 
     private static final String DB_NOMBRE = "cero_desperdicio.db";
-    private static final int DB_VERSION = 5;
+    private static final int DB_VERSION = 6;
     private static final int ITERACIONES = 10000;
 
     public DBHelper(Context context) {
@@ -48,6 +48,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 + "creado INTEGER NOT NULL)");
         crearTablaPublicaciones(db);
         crearReservasYPerfiles(db);
+        insertarDatosDemo(db);
     }
 
     /** Agrega una columna solo si todavía no existe (así la migración nunca falla por repetirse). */
@@ -78,17 +79,18 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int versionVieja, int versionNueva) {
-        // Cada versión nueva agrega lo que le falta SIN borrar los datos existentes.
         if (versionVieja < 2) {
-            crearTablaPublicaciones(db); // ya trae todas las columnas actuales
+            crearTablaPublicaciones(db);
         }
         if (versionVieja < 3) {
-            // Versión 3: foto de la publicación (ruta del archivo).
             agregarColumnaSiFalta(db, "publicaciones", "imagen", "TEXT");
         }
-        // v5 también repara bases marcadas como v4 cuyo esquema estaba incompleto.
-        // La versión por sí sola no garantiza que publicaciones.eliminado exista.
-        if (versionVieja < 5) crearReservasYPerfiles(db);
+        if (versionVieja < 5) {
+            crearReservasYPerfiles(db);
+        }
+        if (versionVieja < 6) {
+            insertarDatosDemo(db);
+        }
     }
 
     // ---------------------------------------------------------------- usuarios
@@ -228,11 +230,6 @@ public class DBHelper extends SQLiteOpenHelper {
                     + "p.caja_sorpresa, p.imagen, u.nombre "
                     + "FROM publicaciones p JOIN usuarios u ON u.id = p.panaderia_id AND u.rol = 'panaderia' ";
 
-    /**
-     * Productos con existencias de todas las panaderías (las más nuevas primero).
-     * panaderiaId > 0 limita a una sola panadería; filtro busca en el nombre del
-     * producto o de la panadería y puede ir vacío.
-     */
     public List<Publicacion> listarProductosDisponibles(long panaderiaId, String filtro) {
         expirarPedidos();
         StringBuilder sql = new StringBuilder(SELECT_PRODUCTO).append("WHERE p.cantidad > 0 AND p.eliminado = 0");
@@ -258,7 +255,6 @@ public class DBHelper extends SQLiteOpenHelper {
         return lista;
     }
 
-    /** Un producto con el nombre de su panadería, o null si ya no existe. */
     public Publicacion obtenerProducto(long id) {
         expirarPedidos();
         SQLiteDatabase db = getReadableDatabase();
@@ -268,7 +264,6 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
-    /** Panaderías que tienen al menos un producto con existencias. filtro busca por nombre. */
     public List<Local> listarLocales(String filtro) {
         expirarPedidos();
         StringBuilder sql = new StringBuilder(
@@ -293,7 +288,6 @@ public class DBHelper extends SQLiteOpenHelper {
         return lista;
     }
 
-    /** Nombre de un usuario (la panadería), o null si no existe. */
     public String obtenerNombreUsuario(long id) {
         SQLiteDatabase db = getReadableDatabase();
         try (Cursor c = db.query("usuarios", new String[]{"nombre"}, "id = ?",
@@ -362,7 +356,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     public boolean guardarNegocio(long id, String direccion, String horario, String telefono,
-                                   String descripcion, Double latitud, Double longitud) {
+                                  String descripcion, Double latitud, Double longitud) {
         if ((latitud == null) != (longitud == null)) return false;
         if (latitud != null && (!Double.isFinite(latitud) || !Double.isFinite(longitud)
                 || Math.abs(latitud) > 90 || Math.abs(longitud) > 180)) return false;
@@ -512,6 +506,127 @@ public class DBHelper extends SQLiteOpenHelper {
         if (ruta == null) return false;
         try (Cursor c = getReadableDatabase().query("pedidos", new String[]{"id"}, "imagen = ?",
                 new String[]{ruta}, null, null, null, "1")) { return c.moveToFirst(); }
+    }
+
+    // --------------------------------------------------------- datos de prueba
+
+    private void insertarDatosDemo(SQLiteDatabase db) {
+        try (Cursor c = db.rawQuery("SELECT COUNT(*) FROM pedidos", null)) {
+            if (c.moveToFirst() && c.getInt(0) > 0) return;
+        }
+
+        long ahora = System.currentTimeMillis();
+        long venceEn24h = ahora + 24 * 60 * 60 * 1000L;
+
+        // 1. Usuarios demo (contraseña de todos: 123456)
+        long idCliente = obtenerOInsertarUsuarioDemo(db, "Cliente Demo", "cliente@demo.com",
+                Usuario.ROL_CLIENTE, "", "", "", "", null, null, ahora);
+
+        long idLupita = obtenerOInsertarUsuarioDemo(db, "Panadería Lupita", "lupita@pan.com",
+                Usuario.ROL_PANADERIA, "Av. San Claudio 1402, Zona CU, Puebla",
+                "18:00 - 21:00", "222 123 4567", "Pan tradicional horneado diario.",
+                19.0005, -98.2020, ahora);
+
+        long idEsperanza = obtenerOInsertarUsuarioDemo(db, "Panadería La Esperanza", "esperanza@pan.com",
+                Usuario.ROL_PANADERIA, "Blvd. 22 Sur 5510, San Manuel, Puebla",
+                "17:30 - 20:30", "222 987 6543", "Pan dulce artesanal y bolillos.",
+                19.0040, -98.1980, ahora);
+
+        // 2. Publicaciones demo
+        long pubCaja = insertarPubDemo(db, idLupita, "Caja Sorpresa Dulce", 45.0,
+                "Surtido de 5 piezas de pan dulce del día.", 5, 1, ahora);
+        insertarPubDemo(db, idLupita, "Pan de Oreja (3 pzs)", 25.0,
+                "Horneado hoy por la mañana, crujiente.", 8, 0, ahora);
+
+        long pubConchas = insertarPubDemo(db, idEsperanza, "Conchas de Vainilla (4 pzs)", 30.0,
+                "Excedente del turno vespertino.", 6, 0, ahora);
+        insertarPubDemo(db, idEsperanza, "Bolillos Artesanales (6 pzs)", 18.0,
+                "Ideales para tortas o molletes.", 10, 0, ahora);
+
+        // 3. Pedidos activos demo (listos para mostrar factura y QR)
+        insertarPedidoDemo(db, idCliente, idLupita, pubCaja,
+                "Caja Sorpresa Dulce", "Surtido de 5 piezas de pan dulce del día.",
+                "Cliente Demo", "cliente@demo.com",
+                "Panadería Lupita", "Av. San Claudio 1402, Zona CU, Puebla", "18:00 - 21:00",
+                19.0005, -98.2020, 4500, 1, "A1B2C3D4E5F60001", "demo-sol-1", ahora, venceEn24h);
+
+        insertarPedidoDemo(db, idCliente, idEsperanza, pubConchas,
+                "Conchas de Vainilla (4 pzs)", "Excedente del turno vespertino.",
+                "Cliente Demo", "cliente@demo.com",
+                "Panadería La Esperanza", "Blvd. 22 Sur 5510, San Manuel, Puebla", "17:30 - 20:30",
+                19.0040, -98.1980, 3000, 2, "A1B2C3D4E5F60002", "demo-sol-2", ahora - 60000, venceEn24h);
+    }
+
+    private long obtenerOInsertarUsuarioDemo(SQLiteDatabase db, String nombre, String correo,
+                                             String rol, String direccion, String horario,
+                                             String telefono, String descripcion,
+                                             Double lat, Double lng, long ahora) {
+        try (Cursor c = db.query("usuarios", new String[]{"id"}, "correo = ?",
+                new String[]{correo}, null, null, null, "1")) {
+            if (c.moveToFirst()) return c.getLong(0);
+        }
+        byte[] salt = new byte[16];
+        new SecureRandom().nextBytes(salt);
+        ContentValues v = new ContentValues();
+        v.put("nombre", nombre);
+        v.put("correo", correo);
+        v.put("password_hash", hashear("123456", salt));
+        v.put("salt", Base64.encodeToString(salt, Base64.NO_WRAP));
+        v.put("rol", rol);
+        v.put("creado", ahora);
+        v.put("direccion", direccion);
+        v.put("horario", horario);
+        v.put("telefono", telefono);
+        v.put("descripcion", descripcion);
+        v.put("latitud", lat);
+        v.put("longitud", lng);
+        return db.insert("usuarios", null, v);
+    }
+
+    private long insertarPubDemo(SQLiteDatabase db, long panaderiaId, String nombre, double precio,
+                                 String detalles, int cantidad, int cajaSorpresa, long ahora) {
+        ContentValues v = new ContentValues();
+        v.put("panaderia_id", panaderiaId);
+        v.put("nombre", nombre);
+        v.put("precio", precio);
+        v.put("detalles", detalles);
+        v.put("cantidad", cantidad);
+        v.put("caja_sorpresa", cajaSorpresa);
+        v.put("imagen", (String) null);
+        v.put("eliminado", 0);
+        v.put("creado", ahora);
+        return db.insert("publicaciones", null, v);
+    }
+
+    private void insertarPedidoDemo(SQLiteDatabase db, long clienteId, long panaderiaId,
+                                    long pubId, String producto, String detalles,
+                                    String cliente, String correoCliente,
+                                    String panaderia, String direccion, String horario,
+                                    double lat, double lng, long precioCentavos, int cantidad,
+                                    String token, String solicitud, long ahora, long vence) {
+        ContentValues v = new ContentValues();
+        v.put("cliente_id", clienteId);
+        v.put("panaderia_id", panaderiaId);
+        v.put("publicacion_id", pubId);
+        v.put("producto", producto);
+        v.put("detalles", detalles);
+        v.put("imagen", (String) null);
+        v.put("cliente", cliente);
+        v.put("correo_cliente", correoCliente);
+        v.put("panaderia", panaderia);
+        v.put("direccion", direccion);
+        v.put("horario", horario);
+        v.put("latitud", lat);
+        v.put("longitud", lng);
+        v.put("precio_centavos", precioCentavos);
+        v.put("cantidad", cantidad);
+        v.put("estado", Pedido.RESERVADO);
+        v.put("token", token);
+        v.put("solicitud", solicitud);
+        v.put("creado", ahora);
+        v.put("vence", vence);
+        v.put("actualizado", ahora);
+        db.insertWithOnConflict("pedidos", null, v, SQLiteDatabase.CONFLICT_IGNORE);
     }
 
     // ------------------------------------------------------------- contraseñas

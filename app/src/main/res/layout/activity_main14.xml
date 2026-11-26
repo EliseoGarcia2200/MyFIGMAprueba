@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F3F4F6">
+    android:background="#F3F4F6"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,19 +12,28 @@
         android:orientation="vertical"
         android:paddingBottom="24dp">
 
-        <!-- Cabecera Azul -->
+        <!-- Cabecera azul con botón de regresar y tarjeta blanca flotante -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#4B83F2"
+            android:background="#4A7CF3"
             android:orientation="vertical"
-            android:padding="20dp">
+            android:padding="16dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/btnBackFactura"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_marginEnd="12dp"
+                    android:contentDescription="Regresar"
+                    android:src="@android:drawable/ic_menu_revert"
+                    app:tint="@color/blanco" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -36,7 +46,7 @@
                         android:layout_height="wrap_content"
                         android:text="Detalle del pedido"
                         android:textColor="@color/blanco"
-                        android:textSize="18sp"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                     <TextView
@@ -49,24 +59,25 @@
                 </LinearLayout>
 
                 <TextView
+                    android:id="@+id/tvBadgeEstado"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_buscador"
-                    android:backgroundTint="#F97316"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="4dp"
+                    android:background="@drawable/bg_boton_naranja"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="6dp"
                     android:text="Pendiente"
                     android:textColor="@color/blanco"
                     android:textSize="12sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- Tarjeta blanca del Total -->
+            <!-- Tarjeta blanca dentro de la cabecera azul -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                app:cardCornerRadius="12dp"
+                app:cardBackgroundColor="@color/blanco"
+                app:cardCornerRadius="16dp"
                 app:cardElevation="2dp">
 
                 <LinearLayout
@@ -78,6 +89,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
                         android:orientation="horizontal">
 
                         <LinearLayout
@@ -90,15 +102,15 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Total a cobrar"
-                                android:textColor="@color/texto_secundario"
+                                android:textColor="#6B7280"
                                 android:textSize="12sp" />
 
                             <TextView
                                 android:id="@+id/tvTotalCobrar"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="$48.900"
-                                android:textColor="#2563EB"
+                                android:text="$45.00"
+                                android:textColor="#4A7CF3"
                                 android:textSize="24sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -113,15 +125,16 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Fecha límite"
-                                android:textColor="@color/texto_secundario"
+                                android:textColor="#6B7280"
                                 android:textSize="12sp" />
 
                             <TextView
+                                android:id="@+id/tvFechaLimite"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Hoy · 18:30"
-                                android:textColor="#2563EB"
-                                android:textSize="13sp"
+                                android:textColor="#4A7CF3"
+                                android:textSize="15sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
                     </LinearLayout>
@@ -129,7 +142,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="12dp"
                         android:orientation="horizontal">
 
                         <TextView
@@ -137,7 +150,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Cancelación automática"
-                            android:textColor="@color/texto_secundario"
+                            android:textColor="#6B7280"
                             android:textSize="12sp" />
 
                         <TextView
@@ -152,13 +165,14 @@
             </androidx.cardview.widget.CardView>
         </LinearLayout>
 
-        <!-- Datos de la compra -->
+        <!-- Tarjeta 1: Datos de la compra -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="14dp"
-            app:cardCornerRadius="12dp"
+            app:cardBackgroundColor="@color/blanco"
+            app:cardCornerRadius="14dp"
             app:cardElevation="1dp">
 
             <LinearLayout
@@ -178,36 +192,84 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Método de pago" android:textColor="@color/texto_secundario" android:textSize="13sp"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Efectivo" android:textColor="@color/texto_oscuro" android:textSize="13sp" android:textStyle="bold"/>
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Método de pago"
+                        android:textColor="#6B7280"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Efectivo"
+                        android:textColor="@color/texto_oscuro"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Fecha y hora" android:textColor="@color/texto_secundario" android:textSize="13sp"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Hoy · 16:15" android:textColor="@color/texto_oscuro" android:textSize="13sp" android:textStyle="bold"/>
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Fecha y hora"
+                        android:textColor="#6B7280"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tvFechaCompra"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Hoy · 16:15"
+                        android:textColor="@color/texto_oscuro"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Estado actual" android:textColor="@color/texto_secundario" android:textSize="13sp"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Pendiente de confirmación" android:textColor="#F97316" android:textSize="13sp" android:textStyle="bold"/>
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Estado actual"
+                        android:textColor="#6B7280"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tvEstadoActual"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pendiente de confirmación"
+                        android:textColor="#F97316"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Datos del usuario -->
+        <!-- Tarjeta 2: Datos del usuario -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="12dp"
-            app:cardCornerRadius="12dp"
+            app:cardBackgroundColor="@color/blanco"
+            app:cardCornerRadius="14dp"
             app:cardElevation="1dp">
 
             <LinearLayout
@@ -224,35 +286,113 @@
                     android:textSize="15sp"
                     android:textStyle="bold" />
 
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Nombre" android:textColor="@color/texto_secundario" android:textSize="13sp"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="María Fernanda Gómez" android:textColor="@color/texto_oscuro" android:textSize="13sp" android:textStyle="bold"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Nombre"
+                        android:textColor="#6B7280"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tvNombreUsuario"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Cliente Demo"
+                        android:textColor="@color/texto_oscuro"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Teléfono" android:textColor="@color/texto_secundario" android:textSize="13sp"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="+57 300 555 0182" android:textColor="@color/texto_oscuro" android:textSize="13sp" android:textStyle="bold"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Teléfono"
+                        android:textColor="#6B7280"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="222 123 4567"
+                        android:textColor="@color/texto_oscuro"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Correo" android:textColor="@color/texto_secundario" android:textSize="13sp"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="maria.gomez@email.com" android:textColor="@color/texto_oscuro" android:textSize="13sp" android:textStyle="bold"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Correo"
+                        android:textColor="#6B7280"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tvCorreoUsuario"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="cliente@demo.com"
+                        android:textColor="@color/texto_oscuro"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Dirección" android:textColor="@color/texto_secundario" android:textSize="13sp"/>
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Calle 72 # 45-18" android:textColor="@color/texto_oscuro" android:textSize="13sp" android:textStyle="bold"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Dirección"
+                        android:textColor="#6B7280"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tvDireccionFactura"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:gravity="end"
+                        android:text="Av. San Claudio 1402, Puebla"
+                        android:textColor="@color/texto_oscuro"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Producto comprado -->
+        <!-- Tarjeta 3: Producto comprado -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="12dp"
-            app:cardCornerRadius="12dp"
+            app:cardBackgroundColor="@color/blanco"
+            app:cardCornerRadius="14dp"
             app:cardElevation="1dp">
 
             <LinearLayout
@@ -272,67 +412,76 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
+                    android:layout_marginTop="12dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
                     <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="52dp"
+                        android:layout_height="52dp"
                         android:background="#F3F4F6"
-                        android:padding="10dp"
+                        android:padding="12dp"
                         android:src="@android:drawable/ic_menu_agenda" />
 
                     <LinearLayout
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
+                        android:layout_weight="1"
                         android:orientation="vertical">
 
                         <TextView
+                            android:id="@+id/tvProductoFactura"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Kit de café gourmet · 250g"
+                            android:text="Caja Sorpresa Dulce"
                             android:textColor="@color/texto_oscuro"
                             android:textSize="14sp"
                             android:textStyle="bold" />
 
                         <TextView
+                            android:id="@+id/tvCantidadFactura"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Cant.: 1 unidad · SKU: CF-204"
-                            android:textColor="@color/texto_secundario"
+                            android:layout_marginTop="2dp"
+                            android:text="Cant.: 1 unidad"
+                            android:textColor="#6B7280"
                             android:textSize="12sp" />
 
                         <TextView
+                            android:id="@+id/tvPrecioUnitarioFactura"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Precio unitario: $48.900"
+                            android:layout_marginTop="4dp"
+                            android:text="Precio unitario: $45.00"
                             android:textColor="@color/texto_oscuro"
-                            android:textSize="12sp"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Confirmar compra (QR) -->
+        <!-- Tarjeta 4: Confirmar compra (QR) -->
         <androidx.cardview.widget.CardView
+            android:id="@+id/btnEscanearQr"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="12dp"
-            app:cardCornerRadius="12dp"
+            app:cardBackgroundColor="@color/blanco"
+            app:cardCornerRadius="14dp"
             app:cardElevation="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
                 android:orientation="vertical"
                 android:padding="16dp">
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Confirmar compra"
                     android:textColor="@color/texto_oscuro"
@@ -340,14 +489,20 @@
                     android:textStyle="bold" />
 
                 <ImageView
-                    android:id="@+id/btnEscanearQr"
-                    android:layout_width="110dp"
-                    android:layout_height="110dp"
-                    android:layout_gravity="center"
+                    android:id="@+id/imgQrPreviewFactura"
+                    android:layout_width="160dp"
+                    android:layout_height="160dp"
                     android:layout_marginTop="12dp"
-                    android:background="@drawable/bg_input"
-                    android:padding="20dp"
+                    android:contentDescription="Código QR de confirmación"
                     android:src="@android:drawable/ic_menu_camera" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Toca el QR para ampliarlo"
+                    android:textColor="#6B7280"
+                    android:textSize="12sp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 

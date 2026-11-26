@@ -44,27 +44,22 @@
     <!-- Mapa de Google Maps -->
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/mapBusqueda"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="12dp"
         app:layout_constraintBottom_toTopOf="@id/guidelineMapa"
         app:layout_constraintTop_toBottomOf="@id/tabsBusqueda" />
 
-    <TextView android:id="@+id/tvMapaNoDisponible" android:layout_width="match_parent"
-        android:layout_height="wrap_content" android:layout_marginTop="78dp" android:paddingHorizontal="24dp"
-        android:text="Consulta las panaderías en la lista. El mapa necesita una clave de Google Maps y los servicios de Google."
-        android:textColor="@color/texto_secundario" android:textSize="14sp" android:visibility="gone"
-        app:layout_constraintTop_toTopOf="@id/mapBusqueda" />
-
-    <!-- Línea guía para dividir Mapa (arriba) y Lista de panaderías (abajo) -->
+    <!-- División entre Mapa (arriba) y Lista (abajo) -->
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guidelineMapa"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.65" />
+        app:layout_constraintGuide_percent="0.60" />
 
-    <!-- Contenedor flotante del buscador + lista de sugerencias -->
+    <!-- Buscador flotante sobre el mapa + sugerencias -->
     <LinearLayout
         android:id="@+id/contenedorBuscadorMapa"
         android:layout_width="match_parent"
@@ -74,7 +69,6 @@
         android:orientation="vertical"
         app:layout_constraintTop_toTopOf="@id/mapBusqueda">
 
-        <!-- Barra blanca con Lupa + EditText + X -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="48dp"
@@ -114,7 +108,6 @@
                 android:visibility="gone" />
         </LinearLayout>
 
-        <!-- Vistas previas de lugares -->
         <ListView
             android:id="@+id/lvSugerenciasMapa"
             android:layout_width="match_parent"
@@ -125,7 +118,7 @@
             android:visibility="gone" />
     </LinearLayout>
 
-    <!-- Lista de panaderías debajo del mapa -->
+    <!-- Lista de panaderías -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvLocales"
         android:layout_width="match_parent"

@@ -21,7 +21,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.constraintlayout.widget.Guideline;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -132,17 +131,16 @@ public class BuscarLocalesActivity extends BaseActivity implements OnMapReadyCal
             }
         });
 
-        if (MapasUtil.disponible(this)) {
-            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapBusqueda);
-            if (mapFragment == null) {
-                mapFragment = SupportMapFragment.newInstance();
-                getSupportFragmentManager().beginTransaction().replace(R.id.mapBusqueda, mapFragment).commitNow();
-            }
-            mapFragment.getMapAsync(this);
-        } else {
-            ((Guideline) findViewById(R.id.guidelineMapa)).setGuidelinePercent(0.32f);
-            findViewById(R.id.tvMapaNoDisponible).setVisibility(View.VISIBLE);
+        // Carga directa del mapa sin el bloqueo de MapasUtil
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.mapBusqueda);
+        if (mapFragment == null) {
+            mapFragment = SupportMapFragment.newInstance();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.mapBusqueda, mapFragment)
+                    .commitNow();
         }
+        mapFragment.getMapAsync(this);
     }
 
     private void ejecutarBusquedaDirecta() {
@@ -157,7 +155,7 @@ public class BuscarLocalesActivity extends BaseActivity implements OnMapReadyCal
         executor.execute(() -> {
             Geocoder geocoder = new Geocoder(this, Locale.getDefault());
             try {
-                List<Address> direcciones = geocoder.getFromLocationName(query, 5);
+                List<Address> direcciones = geocoder.getFromLocationName(query + ", Puebla, Mexico", 5);
                 handler.post(() -> {
                     if (isFinishing() || isDestroyed() || !query.equals(etBuscar.getText().toString().trim())) return;
                     resultadosMapa.clear();
@@ -220,8 +218,10 @@ public class BuscarLocalesActivity extends BaseActivity implements OnMapReadyCal
 
         mMap.setOnInfoWindowClickListener(marcador -> {
             Object id = marcador.getTag();
-            if (id instanceof Long) startActivity(new Intent(this, BuscarProductosActivity.class)
-                    .putExtra(BuscarProductosActivity.EXTRA_PANADERIA_ID, (long) id));
+            if (id instanceof Long) {
+                startActivity(new Intent(this, BuscarProductosActivity.class)
+                        .putExtra(BuscarProductosActivity.EXTRA_PANADERIA_ID, (long) id));
+            }
         });
         cargarLista();
     }
@@ -237,13 +237,17 @@ public class BuscarLocalesActivity extends BaseActivity implements OnMapReadyCal
         String filtro = etBuscar.getText().toString().trim();
         List<Local> locales = db.listarLocales(filtro);
         adapter.actualizar(locales);
+
         if (mMap != null) {
-            mMap.clear(); marcadorBusqueda = null;
+            mMap.clear();
+            marcadorBusqueda = null;
             for (Local local : locales) {
                 Negocio negocio = db.obtenerNegocio(local.id);
                 if (negocio != null && negocio.tieneUbicacion()) {
-                    Marker marcador = mMap.addMarker(new MarkerOptions().position(new LatLng(negocio.latitud, negocio.longitud))
-                            .title(negocio.nombre).snippet(negocio.direccion + " · Toca para ver productos"));
+                    Marker marcador = mMap.addMarker(new MarkerOptions()
+                            .position(new LatLng(negocio.latitud, negocio.longitud))
+                            .title(negocio.nombre)
+                            .snippet(negocio.direccion + " · Toca para ver productos"));
                     if (marcador != null) marcador.setTag(negocio.id);
                 }
             }
@@ -260,9 +264,17 @@ public class BuscarLocalesActivity extends BaseActivity implements OnMapReadyCal
         intent.putExtra(BuscarProductosActivity.EXTRA_PANADERIA_ID, local.id);
         startActivity(intent);
     }
-    @Override protected void alActualizarTiempo() { cargarLista(); }
-    @Override protected void onDestroy() {
-        handler.removeCallbacksAndMessages(null); executor.shutdownNow();
-        if (db != null) db.close(); super.onDestroy();
+
+    @Override
+    protected void alActualizarTiempo() {
+        cargarLista();
+    }
+
+    @Override
+    protected void onDestroy() {
+        handler.removeCallbacksAndMessages(null);
+        executor.shutdownNow();
+        if (db != null) db.close();
+        super.onDestroy();
     }
 }
